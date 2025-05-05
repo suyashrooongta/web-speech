@@ -25,7 +25,7 @@ export default function Home() {
     if (!recognitionRef.current) {
       const recognition = new (window.SpeechRecognition ||
         window.webkitSpeechRecognition)();
-      recognition.lang = "en-US";
+      recognition.lang = "en-IN";
       recognition.interimResults = true;
       recognition.continuous = true; // Keep recognition active during pauses
 
@@ -33,7 +33,7 @@ export default function Home() {
         console.log("Speech recognition result:", event);
         const speechToText = Array.from(event.results)
           .map((result: any) => result[0].transcript)
-          .join("");
+          .join(".");
         setTranscript(speechToText); // Replace instead of appending
       };
 
