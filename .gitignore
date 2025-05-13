@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+testing.ts
+langchain_example.ts
+langgraph_integration.ts
 
 # debug
 npm-debug.log*

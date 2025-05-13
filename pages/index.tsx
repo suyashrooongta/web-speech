@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import axios from "axios";
 
 // Declare the SpeechRecognition interface
 declare global {
@@ -14,19 +15,22 @@ declare var SpeechRecognition: any;
 export default function Home() {
   const [transcript, setTranscript] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [fixedTranscript, setFixedTranscript] = useState("");
   const recognitionRef = useRef<typeof SpeechRecognition | null>(null);
   const isListeningRef = useRef(false); // Ref to track listening state
 
   const startListening = () => {
     console.log("Starting speech recognition...");
     setIsListening(true);
+    setTranscript(""); // Clear previous transcript
+    setFixedTranscript(""); // Clear previous fixed transcript
     isListeningRef.current = true; // Update ref value
 
     if (!recognitionRef.current) {
       const recognition = new (window.SpeechRecognition ||
         window.webkitSpeechRecognition)();
-      recognition.lang = "en-IN";
-      recognition.interimResults = true;
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
       recognition.continuous = true; // Keep recognition active during pauses
 
       recognition.onresult = (event: any) => {
@@ -50,8 +54,15 @@ export default function Home() {
     recognitionRef.current.start();
   };
 
-  const stopListening = () => {
+  const stopListening = async () => {
     setIsListening(false);
+    const fixedTranscript = await axios
+      .get("/api/fixtranscription", {
+        params: { transcript },
+      })
+      .then((res: { data: { response: string } }) => res.data.response);
+    setFixedTranscript(fixedTranscript);
+    console.log("Fixed transcript:", fixedTranscript);
     isListeningRef.current = false; // Update ref value
     recognitionRef.current?.stop();
   };
@@ -78,6 +89,9 @@ export default function Home() {
         </button>
       </div>
       <p className="mt-4 text-lg">{transcript || "Say something..."}</p>
+      <p className="mt-2 text-lg text-green-600">
+        {fixedTranscript && `Fixed Transcript: ${fixedTranscript}`}
+      </p>
     </div>
   );
 }
