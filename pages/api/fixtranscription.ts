@@ -81,7 +81,7 @@ export default async function handler(
     {
       role: "system",
       content:
-        "You are a helpful assistant. The user input will be some transcribed text with potential errors. Please correct the text and return only that, nothing else.",
+        "You are a helpful assistant. The user input will be some transcribed text with potential errors. Please correct the text and return only that, nothing else. Do not improve the text in any other way.",
     },
     {
       role: "user",
