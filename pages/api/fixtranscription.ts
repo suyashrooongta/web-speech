@@ -12,7 +12,7 @@ export interface KrutrimChatMessage {
 interface KrutrimChatCompletionRequest {
   model: string; // Specify the Krutrim model you want to use
   messages: KrutrimChatMessage[];
-  // Add other parameters as needed based on Krutrim's API (e.g., temperature, max_tokens)
+  temperature?: number; // Optional parameter, adjust as needed
 }
 
 interface KrutrimChatChoice {
@@ -35,6 +35,7 @@ export async function callKrutrimChatCompletions(
   const body: KrutrimChatCompletionRequest = {
     model: modelName,
     messages: messages,
+    temperature: 0.0,
   };
 
   const requestOptions: RequestInit = {
@@ -77,17 +78,36 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    res.status(405).json({ response: "Method Not Allowed" });
+    return;
+  }
+
+  const { transcript, context } = req.body as {
+    transcript?: string;
+    context?: string;
+  };
+
+  if (typeof transcript !== "string") {
+    res.status(400).json({ response: "Missing or invalid transcript" });
+    return;
+  }
+
   const conversation: KrutrimChatMessage[] = [
     {
       role: "system",
       content:
-        "You are a helpful assistant. The user input will be some transcribed text with potential errors. Please correct the text and return only that, nothing else. Do not improve the text in any other way.",
+        "You are a helpful assistant. The user input will be some transcribed text with potential errors." +
+        (context ? ` Context of the user input: ${context}` : "") +
+        "Please correct the text. You can add punctuation. Do not improve the text in any other way - do not add extra words, do not change the order of words.  Return only the corrected text and not any other text.",
     },
     {
       role: "user",
-      content: req.query.transcript as string,
+      content: transcript,
     },
   ];
+  console.log("Conversation:", conversation); // Log the conversation for debugging
   const modelToUse = "Llama-4-Scout-17B-16E-Instruct";
   const response = await callKrutrimChatCompletions(conversation, modelToUse);
   res.status(200).json({ response: response || "No response" });
