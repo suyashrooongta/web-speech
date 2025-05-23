@@ -31,7 +31,7 @@ export default function Home() {
     if (!recognitionRef.current) {
       const recognition = new SpeechRecognitionClass();
       recognition.lang = "en-US";
-      recognition.interimResults = false;
+      recognition.interimResults = true;
       recognition.continuous = true; // Keep recognition active during pauses
 
       const SpeechGrammarListClass =
@@ -54,7 +54,7 @@ export default function Home() {
       }
 
       recognition.onresult = (event: any) => {
-        console.log("Speech recognition result:", event);
+        console.log("Speech recognition result:", event.results);
         const speechToText = Array.from(event.results)
           .map((result: any) => result[0].transcript)
           .join(".");
